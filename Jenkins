@@ -1,0 +1,98 @@
+pipeline {
+    agent any
+    
+    triggers {
+        // Trigger the build automatically when changes are pushed to GitHub
+        githubPush()
+    }
+	
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/manishktomar/hello-world.git', branch: 'master'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                // Assuming Maven is installed and available in the Jenkins environment
+                sh '/opt/apache-maven-3.9.6/bin/mvn clean install'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Define the Docker image name and tag
+                    def dockerImage = "tomcat1:latest"
+                    
+					// Specify the path to the Dockerfile (adjust this to match your project structure)
+                    def dockerfilePath = '/var/lib/jenkins/docker/Dockerfile'  // Example: 'docker/' is the subdirectory
+                    
+                    // Build the Docker image using the Dockerfile in the project
+                    sh "docker build -t ${dockerImage} -f ${dockerfilePath} ."
+                }
+            }
+        }
+		
+		stage('Push Docker Image') {
+            steps {
+                script {
+                    def dockerImage = "tomcat1:latest"
+
+                    // Use Jenkins credentials for Docker Hub
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        
+						// Login to Docker Hub
+						sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME"'
+
+						// Push the Docker image to Docker Hub
+						sh "docker tag ${dockerImage} $DOCKER_USERNAME/${dockerImage}"		// First tag the Image name then Push on Dockerhub
+						sh "docker push ${dockerImage}"
+					}	
+                }
+            }
+        }
+		
+		stage('Deploy to Tomcat (Docker)') {
+            steps {
+                script {
+                    // Stop and remove any running container with the same name
+                    sh 'docker rm -f tomcat_test || true'
+                    
+                    // Run the new Docker container
+                    def dockerImage = "tomcat1:latest"
+                    sh "docker run -d --name tomcat_test -p 8081:8080 ${dockerImage}"
+                }
+            }
+        }
+
+        stage('Copy .war to Docker Container') {
+            steps {
+                script {
+                    // Copy the WAR file to the Tomcat webapps directory
+					def warFile = findFiles(glob: '**/target/*.war')[0].path
+                    
+				    // Copy the .war file from the Jenkins workspace to the running Docker container
+                    sh "docker cp ${warFile} tomcat_test:/usr/local/tomcat/webapps/"
+                
+                    // Optionally, restart Tomcat to deploy the new WAR
+                    def tomcatShutdown = '/opt/tomcat1/bin/shutdown.sh'
+                    def tomcatStartup = '/opt/tomcat1/bin/startup.sh'
+                    
+                    sh "${tomcatShutdown}"
+                    sh "${tomcatStartup}"
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Build and Deployment Successful'
+        }
+        failure {
+            echo 'Build or Deployment Failed'
+        }
+    }
+}
