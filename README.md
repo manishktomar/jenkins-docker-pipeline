@@ -33,14 +33,14 @@ To set up a Jenkins pipeline that performs the following actions:
 ## Errors and Solutions: 
 
 #### Issue 1 
-	```
+	
 	ERROR: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied
 	
   Solution 
 	
 	sudo usermod -aG docker jenkins
 	sudo systemctl restart jenkins
-	```
+	
 
 #### Issue 2 
 	```
