@@ -33,7 +33,6 @@ To set up a Jenkins pipeline that performs the following actions:
 ## Errors and Solutions: 
 
 #### Issue 1 
-	
 	ERROR: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied
 	
   Solution 
@@ -43,18 +42,16 @@ To set up a Jenkins pipeline that performs the following actions:
 	
 
 #### Issue 2 
-	```
-	failed to read dockerfile: open /var/lib/docker/tmp/buildkit-mount587080174/Dockerfile: no such file or directory
+		failed to read dockerfile: open /var/lib/docker/tmp/buildkit-mount587080174/Dockerfile: no such file or directory
 
   Solution 
 	
 	dockerfilePath = '/var/lib/jenkins/docker/Dockerfile'	//Mention the Complete directory and file name
 	chown -R jenkins:jenkins docker/						// Set the Permission for Dockerfile
 	docker build -t ${dockerImage} -f ${dockerfilePath} .
-	```
+	
 
 #### Issue 3
-	```
 	The push refers to repository [docker.io/library/tomcat1]
 	5f70bf18a086: Preparing
 	f36fd4bb7334: Waiting
@@ -64,4 +61,4 @@ To set up a Jenkins pipeline that performs the following actions:
 	
 	docker tag firstimage YOUR_DOCKERHUB_NAME/firstimage		// First Tag the Image, then push on Docker Hub
 	docker push YOUR_DOCKERHUB_NAME/firstimage
-	```
+	
