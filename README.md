@@ -42,12 +42,12 @@ To set up a Jenkins pipeline that performs the following actions:
 	
 
 #### Issue 2 
-		failed to read dockerfile: open /var/lib/docker/tmp/buildkit-mount587080174/Dockerfile: no such file or directory
+	failed to read dockerfile: open /var/lib/docker/tmp/buildkit-mount587080174/Dockerfile: no such file or directory
 
   Solution 
 	
-	dockerfilePath = '/var/lib/jenkins/docker/Dockerfile'	//Mention the Complete directory and file name
-	chown -R jenkins:jenkins docker/						// Set the Permission for Dockerfile
+	dockerfilePath = '/var/lib/jenkins/docker/Dockerfile'			//Mention the Complete directory and file name
+	chown -R jenkins:jenkins docker/					// Set the Permission for Dockerfile
 	docker build -t ${dockerImage} -f ${dockerfilePath} .
 	
 
@@ -59,6 +59,6 @@ To set up a Jenkins pipeline that performs the following actions:
 	
   Solution 
 	
-	docker tag firstimage YOUR_DOCKERHUB_NAME/firstimage		// First Tag the Image, then push on Docker Hub
+	docker tag firstimage YOUR_DOCKERHUB_NAME/firstimage			// First Tag the Image, then push on Docker Hub
 	docker push YOUR_DOCKERHUB_NAME/firstimage
 	
